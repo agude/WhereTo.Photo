@@ -4,8 +4,6 @@ from settings import APP_ROOT, APP_STATIC
 import helpers
 import json
 
-CITY_ID = 1 # 1 is SF
-
 @app.route('/')
 @app.route('/index')
 def cities_input():
@@ -15,6 +13,7 @@ def cities_input():
 def cities_output():
     #pull 'ID' from input field and store it
     tag = request.args.get('ID')
+    city_id = request.args.get('CITY')
     if tag is None:
         tag = 'goldengate'
 
@@ -22,10 +21,13 @@ def cities_output():
     clean_tag = tag.strip().lower().replace(' ', '')
 
     # Get coords from results
-    best_coord = helpers.get_results_from_tag(clean_tag)
+    try:
+        best_coord = helpers.get_results_from_tag(clean_tag, city_id)
+    except IndexError:
+        best_coord = helpers.Coordinate(0, 0)
 
     # Get all the photos
-    photo_coords = helpers.get_photos_from_tags((clean_tag,), CITY_ID)
+    photo_coords = helpers.get_photos_from_tags((clean_tag,), city_id)
     leaflet_coords = []
     seen_photos = []
     for (views, photo_id, url, coord) in photo_coords:
@@ -42,8 +44,8 @@ def cities_output():
     seen_photos = set(seen_photos)
 
     # Get related tags
-    related_tags = helpers.get_related_tags(clean_tag)
-    related_photo_coords = helpers.get_photos_from_tags(related_tags, CITY_ID)
+    related_tags = helpers.get_related_tags(clean_tag, city_id)
+    related_photo_coords = helpers.get_photos_from_tags(related_tags, city_id)
     related_leaflet_coords = []
     for (views, photo_id, url, coord) in related_photo_coords:
         datum = {

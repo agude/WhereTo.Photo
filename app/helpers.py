@@ -1,22 +1,11 @@
 from math import sin, cos, sqrt, atan2, radians
-from mpl_toolkits.basemap import Basemap
-import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 from scipy import stats, optimize
-from math import sin, cos, sqrt, atan2, radians
 import pymysql as mdb
 from credentials import DB_INFO
 
-DB_NAME = 'flickr_data'
-con = mdb.connect(
-        DB_INFO['host'],
-        DB_INFO['user'],
-        DB_INFO['password'],
-        DB_NAME,
-        autocommit=True,
-        )
-
+DB_NAME = "flickr_data"
 con_read = mdb.connect(
         DB_INFO['host'],
         DB_INFO['readonly_user'],
@@ -63,7 +52,7 @@ class Coordinate:
         return self.coord.__repr__()
 
 
-def city_coordinate(city_id, con=con):
+def city_coordinate(city_id, con=con_read):
     with con:
         cur = con.cursor()
         SELECT = """SELECT lat, lon
@@ -78,57 +67,6 @@ def city_coordinate(city_id, con=con):
         (lat, lon) = rows[0]
         return Coordinate(lat, lon)
 
-
-def get_map(city_id, box_size = 0.6, con=con):
-    # Get the coordinates from the database
-    coord = city_coordinate(city_id, con)
-
-    # Get the corners of the map box
-    offset = box_size / 2.
-    ll_lon = coord.lon - offset
-    ll_lat = coord.lat - offset
-    ur_lon = coord.lon + offset
-    ur_lat = coord.lat + offset
-
-    # Set up the map object
-    my_map = Basemap(
-            projection='merc',
-            lat_0=coord.lat,
-            lon_0=coord.lon,
-            #resolution = 'f',
-            resolution = 'h',
-            area_thresh = 0.1,
-            llcrnrlon=ll_lon,
-            llcrnrlat=ll_lat,
-            urcrnrlon=ur_lon,
-            urcrnrlat=ur_lat,
-            )
-
-    return my_map
-
-
-def get_all_photos(city_id, radius=15, con=con):
-    # Coordinates of the city to measure radius from
-    city_center = city_coordinate(city_id, con)
-
-    with con:
-        cur = con.cursor()
-        SELECT = """SELECT lat, lon
-                    FROM photos
-                    WHERE city_id = {city_id}""".format(
-                city_id=city_id
-                )
-        cur.execute(SELECT)
-
-        # Select photos within some distance of the city
-        coords = []
-        for lat, lon in cur:
-            coord = Coordinate(lat, lon)
-            if city_center.distance_to(coord) <= radius:
-                coords.append(coord)
-        cur.close()
-
-        return np.array(coords)
 
 def get_related_tags(tag, city_id, con=con_read):
     with con:
@@ -185,65 +123,6 @@ def get_photos_from_tags(tags, city_id, radius=15, con=con_read):
         return output
 
 
-def get_xy_kde(photo_coords):
-    # Get x,y coordinates
-    X, Y = zip(*((coord.x, coord.y) for coord in photo_coords))
-
-    # Make a grid to sample on
-    values = np.vstack([X, Y])
-    return stats.gaussian_kde(values, bw_method=0.2)
-
-
-def get_tags_to_run_on(city_id, graph_tags):
-    with con:
-        cur = con.cursor()
-
-        # Get all tags
-        SELECT = """SELECT tag
-                FROM tags t"""
-        cur.execute(SELECT)
-        rows = cur.fetchall()
-        all_tags = set([tag for tag, in rows if tag in graph_tags])
-
-        # Get the tags we have already filled
-        SELECT = """SELECT t.tag
-                FROM tags t
-                INNER JOIN results_no_related r ON t.tag_id = r.tag_id
-                WHERE r.city_id = {city_id}""".format(
-                        city_id=city_id,
-                        )
-        cur.execute(SELECT)
-        rows = cur.fetchall()
-        done_tags = set([tag for tag, in rows])
-
-        # Tags to consider
-        tags_to_consider = all_tags - done_tags
-
-        # Find the most popular tags
-        count_tag = []
-        for tag in tags_to_consider:
-            SELECT = """SELECT COUNT(pt.photo_id)
-                    FROM photo_tags pt
-                    INNER JOIN tags t ON pt.tag_id = t.tag_id
-                    INNER JOIN photos p on pt.photo_id = p.photo_id
-                    WHERE p.city_id = {city_id}
-                    AND t.tag = '{tag}'""".format(
-                            city_id=city_id,
-                            tag=tag,
-                            )
-            cur.execute(SELECT)
-            rows = cur.fetchall()
-            count = rows[0][0]
-            count_tag.append((count, tag))
-
-        cur.close()
-
-        # Sort the tags from most to least common
-        tags_to_run_on = [tag for _, tag in reversed(sorted(count_tag))]
-
-        return tags_to_run_on
-
-
 def get_results_from_tag(tag, city_id, con=con_read):
     with con:
         cur = con.cursor()
@@ -262,18 +141,3 @@ def get_results_from_tag(tag, city_id, con=con_read):
         coord = Coordinate(lat, lon)
 
         return coord
-
-def get_tags_from_results(city_id, con=con_read):
-    with con:
-        cur = con.cursor()
-
-        # Get all tags
-        SELECT = """SELECT t.tag, r.city_id, r.photo_id, r.lat, r.lon
-        FROM results r
-        LEFT JOIN tags t ON r.tag_id = t.tag_id
-        WHERE r.city_id = %s;
-        """
-        cur.execute(SELECT, city_id)
-        rows = cur.fetchall()
-        cur.close()
-        return rows
