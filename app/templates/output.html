@@ -96,26 +96,6 @@
     // Add a marker for the best location
     var marker = L.marker([best_lat, best_lon]).addTo(map);
 
-    // Add all photos of related tags
-    var related_points = {{ related_coords | safe }};
-    var related_points_length = related_points.length;
-    for (var i = 0; i < related_points_length; i++) {
-        var datum = related_points[i];
-        var circle = L.circle(
-            [datum['lat'], datum['lon']],
-            50,
-            {
-                color: 'red',
-                //fillColor: '#f03',
-                fillOpacity: 0.5
-            }
-        ).addTo(map);
-        circle.bindPopup(
-                "<a>\n<img src=" + datum['url'] + "/></a>",
-                {maxWidth: 350}
-                );
-    }
-
     // Add all photos of the tag
     var tag_points = {{ tag_coords | safe }};
     var tag_points_length = tag_points.length;

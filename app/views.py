@@ -43,21 +43,6 @@ def cities_output():
 
     seen_photos = set(seen_photos)
 
-    # Get related tags
-    related_tags = helpers.get_related_tags(clean_tag, city_id)
-    related_photo_coords = helpers.get_photos_from_tags(related_tags, city_id)
-    related_leaflet_coords = []
-    for (views, photo_id, url, coord) in related_photo_coords:
-        datum = {
-                "lat": coord.lat,
-                "lon": coord.lon,
-                "url": url,
-                "photo_id": photo_id,
-                "views": views,
-                }
-        if photo_id not in seen_photos:
-            related_leaflet_coords.append(datum)
-
     # Set the page title string
     title = tag.capitalize()
     print title
@@ -67,6 +52,5 @@ def cities_output():
             title = title,
             best_lon = best_coord.lon,
             best_lat = best_coord.lat,
-            related_coords = json.dumps(list(related_leaflet_coords)),
             tag_coords = json.dumps(list(leaflet_coords)),
             )
