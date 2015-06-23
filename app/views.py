@@ -25,7 +25,7 @@ def cities_output():
     if city_id not in [1, 2, '1', '2']:
         return render_template("error.html",
                 title = "Invalid City",
-                text = "Sorry, we only support San Francisco and Seattle for now.",
+                text = "We only support San Francisco and Seattle for now, sorry!",
                 )
 
     # Clean up the tag
@@ -38,7 +38,7 @@ def cities_output():
     except IndexError:
         return render_template("error.html",
                 title = "Unknown Tag",
-                text = "Sorry, no one has used that tag in the dataset!",
+                text = "No one has used that tag in the dataset, yet!",
                 )
 
     # Get all the photos
@@ -67,4 +67,11 @@ def cities_output():
             best_lon = best_coord.lon,
             best_lat = best_coord.lat,
             tag_coords = json.dumps(list(leaflet_coords)),
+            )
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("error.html",
+            title = str(e),
+            text = "Sorry, that page doesn't exist."
             )
