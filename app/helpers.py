@@ -126,7 +126,7 @@ def get_results_from_tag(tag, city_id, con=con_read):
 
         # Get all tags
         SELECT = """SELECT r.lat, r.lon
-        FROM results r
+        FROM results_no_related r
         LEFT JOIN tags t ON t.tag_id = r.tag_id
         WHERE t.tag = %s
         AND r.city_id = %s
