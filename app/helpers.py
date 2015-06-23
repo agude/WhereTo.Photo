@@ -1,7 +1,4 @@
 from math import sin, cos, sqrt, atan2, radians
-import networkx as nx
-import numpy as np
-from scipy import stats, optimize
 import pymysql as mdb
 from credentials import DB_INFO
 
