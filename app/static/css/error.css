@@ -1,0 +1,16 @@
+H1,H2,H3 {
+    color: black;
+}
+
+html, body, .container {
+    top: 50px;
+    height: 100%;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
