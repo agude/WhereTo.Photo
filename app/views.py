@@ -14,9 +14,19 @@ def cities_input():
 def cities_output():
     #pull 'ID' from input field and store it
     tag = request.args.get('ID')
-    city_id = request.args.get('CITY')
     if tag is None:
-        tag = 'goldengate'
+        return render_template("error.html",
+                title = "Missing Tag",
+                text = "It looks like you didn't enter anything!",
+                )
+
+    # Get the city
+    city_id = request.args.get('CITY')
+    if city_id not in [1, 2, '1', '2']:
+        return render_template("error.html",
+                title = "Invalid City",
+                text = "Sorry, we only support San Francisco and Seattle for now.",
+                )
 
     # Clean up the tag
     clean_tag = tag.strip().lower().replace(' ', '')
@@ -26,7 +36,10 @@ def cities_output():
     try:
         best_coord = helpers.get_results_from_tag(clean_tag, city_id)
     except IndexError:
-        best_coord = helpers.Coordinate(0, 0)
+        return render_template("error.html",
+                title = "Unknown Tag",
+                text = "Sorry, no one has used that tag in the dataset!",
+                )
 
     # Get all the photos
     photo_coords = helpers.get_photos_from_tags((clean_tag,), city_id)
