@@ -3,6 +3,7 @@ from flask import render_template, request
 from settings import APP_ROOT, APP_STATIC
 import helpers
 import json
+import re
 
 @app.route('/')
 @app.route('/index')
@@ -19,6 +20,7 @@ def cities_output():
 
     # Clean up the tag
     clean_tag = tag.strip().lower().replace(' ', '')
+    clean_tag = re.sub("[\W_]+", '', clean_tag)
 
     # Get coords from results
     try:
@@ -45,7 +47,6 @@ def cities_output():
 
     # Set the page title string
     title = tag.capitalize()
-    print title
 
     # Render the page
     return render_template("output.html",
