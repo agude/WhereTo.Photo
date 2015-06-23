@@ -1,4 +1,4 @@
-#!/home/agude/bin/anaconda/bin/python
+#!/usr/bin/env python
 
 from app import app
 
