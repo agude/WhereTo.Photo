@@ -64,6 +64,7 @@ def cities_output():
     # Render the page
     return render_template("output.html",
             title = title,
+            city_id = city_id,
             best_lon = best_coord.lon,
             best_lat = best_coord.lat,
             tag_coords = json.dumps(list(leaflet_coords)),
