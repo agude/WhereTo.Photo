@@ -74,3 +74,24 @@ body {
     font-size: 4.5em;
     font-weight: 700;
 }
+
+/* unvisited links */
+a:link    {
+    color: #0099FF;
+    text-decoration: underline;
+}
+
+/* visited links */
+a:visited {
+    color: #000099;
+}
+
+/* user hovers */
+a:hover   {
+    color: #0033FF;
+}
+
+/* active links */
+a:active  {
+    color: white;
+}
