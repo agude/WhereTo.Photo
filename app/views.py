@@ -22,10 +22,10 @@ def cities_output():
 
     # Get the city
     city_id = request.args.get('CITY')
-    if city_id not in [1, 2, '1', '2']:
+    if city_id not in ['1', '2', '4']:
         return render_template("error.html",
                 title = "Invalid City",
-                text = "We only support San Francisco and Seattle for now, sorry!",
+                text = "We only support San Francisco, Seattle, and New York for now, sorry!",
                 )
 
     # Clean up the tag
