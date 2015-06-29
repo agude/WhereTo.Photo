@@ -5,6 +5,10 @@ import helpers
 import json
 import re
 
+@app.route('/presentation')
+def presentation():
+    return render_template("presentation.html")
+
 @app.route('/')
 @app.route('/index')
 def cities_input():
